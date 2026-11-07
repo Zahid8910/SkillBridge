@@ -4,51 +4,24 @@
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const THEME_STORAGE = 'skillbridge-theme-v1';
+  const PROFILE_STORAGE = 'skillbridge-profile-v1';
+  const BOOKMARK_STORAGE = 'skillbridge-bookmarks-v1';
+  const ROADMAP_STORAGE = 'skillbridge-roadmaps-v1';
+  const SUBMISSION_STORAGE = 'skillbridge-submissions-v1';
   const categoryTone = {'Frontend Development':'blue','Full-Stack Development':'violet','Backend Development':'green','UI/UX Design':'pink','Database Management':'amber','Data Analysis':'teal','Artificial Intelligence':'indigo'};
-  let profile = {...window.SkillBridgeProfile.demo};
-  let saved = [];
-  let submissions = [];
-  let roadmaps = [];
+  let profile = readStorage(PROFILE_STORAGE, window.SkillBridgeProfile.demo);
+  let saved = readStorage(BOOKMARK_STORAGE, []);
+  let submissions = readStorage(SUBMISSION_STORAGE, []);
+  let roadmaps = readStorage(ROADMAP_STORAGE, []);
   let activeRoadmapProjectId = '';
-  let mentorKey = '';
-  let mentorName = '';
   let showSaved = false;
-  let authMode = 'login';
   let lastFocused = null;
-
-  async function api(path, options = {}) {
-    const response = await fetch(`/api${path}`, {
-      credentials: 'same-origin',
-      headers: {'Content-Type':'application/json', ...(options.headers || {})},
-      ...options
-    });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.error || `Request failed (${response.status}).`);
-    return body;
-  }
-  const post = (path, body, headers) => api(path, {method:'POST', body:JSON.stringify(body), headers});
-  const put = (path, body) => api(path, {method:'PUT', body:JSON.stringify(body)});
-  const patch = (path, body, headers) => api(path, {method:'PATCH', body:JSON.stringify(body), headers});
+  function readStorage(key, fallback) { try { const value = JSON.parse(localStorage.getItem(key)); return value ?? fallback; } catch { return fallback; } }
+  function writeStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { toast('This browser could not save your changes.'); return false; } }
   function toast(message) { const node = $('#toast'); node.textContent = message; node.classList.add('visible'); clearTimeout(toast.timer); toast.timer = setTimeout(() => node.classList.remove('visible'), 2600); }
   function initials(name) { return (name || 'S').trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase() || 'S'; }
   function fillOptions(select, options) { options.forEach(item => { const option=document.createElement('option'); option.value=item; option.textContent=item; select.append(option); }); }
   function updateSavedCount() { $('#saved-count').textContent = saved.length; }
-  function showAuthGate(show) {
-    $('#auth-gate').classList.toggle('hidden', !show);
-    $('.app-shell').classList.toggle('hidden', show);
-    $('.mobile-nav').classList.toggle('hidden', show);
-    document.body.classList.toggle('auth-pending', show);
-  }
-  function setAuthMode(mode) {
-    authMode = mode;
-    const registering = mode === 'register';
-    $$('.auth-tab').forEach(button => button.classList.toggle('active', button.dataset.authMode === mode));
-    $('.auth-name-field').classList.toggle('hidden', !registering);
-    $('#auth-submit').innerHTML = registering ? 'Create account <span>→</span>' : 'Sign in <span>→</span>';
-    $('#auth-title').textContent = registering ? 'Create your workspace' : 'Sign in to your workspace';
-    $('#auth-form').elements.password.autocomplete = registering ? 'new-password' : 'current-password';
-    $('#auth-status').textContent = '';
-  }
   function setTheme(theme) {
     const dark = theme === 'dark';
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
@@ -119,11 +92,9 @@
   }
   function renderSubmissions(){
     const items=[...submissions].sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
-    $('#submission-list').innerHTML=items.length?items.map(item=>`<article class="submission-item"><div class="submission-item-head"><strong>${esc(data.projects.find(project=>project.id===item.projectId)?.title||'Project')}</strong><span class="submission-status status-${esc(item.status)}">${esc(item.status.replace('-',' '))}</span></div><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">Open submitted work ↗</a>${item.notes?`<p>${esc(item.notes)}</p>`:''}${item.feedback?`<div class="mentor-feedback"><span>Mentor feedback · ${esc(item.mentorName||'Mentor')}</span><p>${esc(item.feedback)}</p></div>`:''}<small>Submitted ${new Date(item.createdAt).toLocaleDateString()}</small></article>`).join(''):'<p class="list-empty">No submissions yet. Share your work when you are ready for feedback.</p>';
+    $('#submission-list').innerHTML=items.length?items.map(item=>`<article class="submission-item" data-submission-card="${esc(item.id)}"><div class="submission-item-head"><strong>${esc(data.projects.find(project=>project.id===item.projectId)?.title||'Project')}</strong><span class="submission-status ${item.status==='approved'?'status-approved':item.status==='needs-revision'?'status-needs-revision':''}">${esc((item.status||'pending review').replaceAll('-',' '))}</span></div><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">Open submitted work ↗</a>${item.notes?`<p>${esc(item.notes)}</p>`:''}<label class="field review-feedback-field">Reviewer feedback<textarea data-local-feedback rows="2" maxlength="1000" placeholder="Share one helpful suggestion...">${esc(item.feedback||'')}</textarea></label><div class="local-review-actions"><select data-local-status aria-label="Demo review status"><option value="pending" ${!item.status||item.status==='pending'?'selected':''}>Pending review</option><option value="approved" ${item.status==='approved'?'selected':''}>Approved</option><option value="needs-revision" ${item.status==='needs-revision'?'selected':''}>Needs revision</option></select><button class="button button-outline" data-save-review="${esc(item.id)}">Save demo feedback</button></div><small>Saved ${new Date(item.createdAt).toLocaleDateString()}</small></article>`).join(''):'<p class="list-empty">No submissions yet. Save a project link when you are ready.</p>';
   }
-  async function refreshRoadmap(preferredId=''){
-    try{
-      const response=await api('/roadmaps');roadmaps=response.roadmaps;
+  function refreshRoadmap(preferredId=''){
       $('#roadmap-count').textContent=roadmaps.length;
       const select=$('#roadmap-project-select');const previous=preferredId||activeRoadmapProjectId;
       select.innerHTML='<option value="">Choose a project to get started</option>'+roadmaps.map(item=>`<option value="${esc(item.projectId)}">${esc(item.project.title)}</option>`).join('');
@@ -132,64 +103,52 @@
       const active=roadmaps.find(item=>item.projectId===activeRoadmapProjectId);
       $('#roadmap-empty').classList.toggle('hidden',Boolean(active));$('#roadmap-active').classList.toggle('hidden',!active);
       if(!active){$('#roadmap-progress-label').textContent='No roadmap selected';$('#roadmap-progress-percent').textContent='0%';$('#roadmap-progress-bar').style.width='0%';renderSubmissions();return;}
-      $('#roadmap-project-title').textContent=active.project.title;$('#roadmap-project-meta').textContent=`${active.project.category} · ${active.project.level} · ${active.project.duration}`;
-      $('#roadmap-progress-label').textContent=`${active.completed} of ${active.total} milestones complete`;
-      $('#roadmap-progress-percent').textContent=`${active.percent}%`;$('#roadmap-progress-bar').style.width=`${active.percent}%`;
+      const project=data.projects.find(item=>item.id===active.projectId);if(!project){roadmaps=roadmaps.filter(item=>item.projectId!==active.projectId);persistRoadmaps();refreshRoadmap();return;}
+      active.project=project;const total=active.milestones.length,completed=active.milestones.filter(item=>item.completed).length,percent=total?Math.round(completed/total*100):0;
+      $('#roadmap-project-title').textContent=project.title;$('#roadmap-project-meta').textContent=`${project.category} · ${project.level} · ${project.duration}`;
+      $('#roadmap-progress-label').textContent=`${completed} of ${total} milestones complete`;
+      $('#roadmap-progress-percent').textContent=`${percent}%`;$('#roadmap-progress-bar').style.width=`${percent}%`;
       $('#milestone-list').innerHTML=active.milestones.map((milestone,index)=>`<li class="milestone-item ${milestone.completed?'complete':''}" style="--index:${index}"><label class="milestone-check"><input type="checkbox" data-milestone="${esc(milestone.id)}" ${milestone.completed?'checked':''}><span class="milestone-number">${String(index+1).padStart(2,'0')}</span><span class="milestone-copy"><strong>${esc(milestone.title)}</strong><small>${milestone.completed?'Completed':'Mark complete when you are done with this step'}</small></span></label></li>`).join('');
       $('#submission-form').elements.url.value='';$('#submission-form').elements.notes.value='';
       renderSubmissions();
-    }catch(error){toast(error.message);}
   }
-  function renderMentorQueue(items){
-    $('#mentor-queue').innerHTML=items.length?items.map(item=>`<article class="mentor-review-card" data-review-card="${esc(item.id)}"><div class="submission-item-head"><strong>${esc(item.projectTitle)}</strong><span class="submission-status status-${esc(item.status)}">${esc(item.status.replace('-',' '))}</span></div><p class="mentor-student">${esc(item.studentName)} · Submitted ${new Date(item.createdAt).toLocaleDateString()}</p><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">Review submitted work ↗</a>${item.notes?`<p>${esc(item.notes)}</p>`:''}<label class="field">Feedback<textarea data-feedback rows="3" maxlength="2000" placeholder="Give specific, actionable feedback...">${esc(item.feedback||'')}</textarea></label><div class="mentor-review-actions"><select data-review-status aria-label="Review decision"><option value="approved">Approve</option><option value="needs-revision" ${item.status==='needs-revision'?'selected':''}>Request revision</option></select><button class="button button-primary" data-review-submit="${esc(item.id)}">Save review</button></div></article>`).join(''):'<p class="list-empty">No submissions are waiting for a review.</p>';
+  function makeRoadmap(projectId) {
+    const project=data.projects.find(item=>item.id===projectId); if(!project)return null;
+    const phases=['Plan the user need','Build the core experience','Polish, test & share'];
+    const tasks=project.requirements.slice(0,6);
+    const milestones=[
+      {id:'plan',title:`Plan: ${phases[0]} and define your first version`},
+      ...tasks.slice(0,2).map((title,index)=>({id:`build-${index+1}`,title:`Build: ${title}`})),
+      ...tasks.slice(2,4).map((title,index)=>({id:`refine-${index+1}`,title:`Refine: ${title}`})),
+      {id:'share',title:`Finish: ${phases[2]} with a README and live demo`}
+    ].map(item=>({...item,completed:false}));
+    return {projectId,project,milestones,createdAt:new Date().toISOString()};
   }
-  async function loadMentorQueue(){
-    try{const response=await api('/mentor/submissions',{headers:{'X-Mentor-Key':mentorKey}});renderMentorQueue(response.submissions);$('#mentor-status').textContent=`Loaded ${response.submissions.length} submission${response.submissions.length===1?'':'s'}.`;}
-    catch(error){$('#mentor-status').textContent=error.message;$('#mentor-queue').innerHTML='';}
-  }
-  async function hydrateWorkspace(){
-    const [profileResponse,bookmarkResponse,roadmapResponse,submissionResponse]=await Promise.all([api('/profile'),api('/bookmarks'),api('/roadmaps'),api('/submissions')]);
-    profile=profileResponse.profile;saved=bookmarkResponse.bookmarks;roadmaps=roadmapResponse.roadmaps;submissions=submissionResponse.submissions;
-    fillProfileForm(profile);renderFeatured();renderProjects();renderResources();updateSavedCount();
-    const preferred=location.hash.slice(1);if(['dashboard','projects','resources','roadmap','profile'].includes(preferred))setView(preferred);else setView('dashboard');
-  }
+  function persistRoadmaps() { writeStorage(ROADMAP_STORAGE,roadmaps); }
   function bindEvents(){
     document.addEventListener('click',async event=>{
-      const authTab=event.target.closest('[data-auth-mode]');if(authTab){setAuthMode(authTab.dataset.authMode);return;}
-      if(event.target.closest('#demo-login')){$('#auth-form').elements.email.value='student@skillbridge.demo';$('#auth-form').elements.password.value='SkillBridge2026!';$('#auth-status').textContent='Demo credentials filled. Select Sign in to continue.';return;}
       const nav=event.target.closest('[data-view]');if(nav){event.preventDefault();setView(nav.dataset.view);return;}
       const go=event.target.closest('[data-go]');if(go){setView(go.dataset.go);return;}
       const bookmark=event.target.closest('[data-bookmark]');if(bookmark){
         const id=bookmark.dataset.bookmark,next=saved.includes(id)?saved.filter(item=>item!==id):[...saved,id];
-        try{const response=await put('/bookmarks',{bookmarks:next});saved=response.bookmarks;updateSavedCount();renderFeatured();renderProjects();if(!$('#project-modal').classList.contains('hidden'))openDetail(id,$('#modal-close'));toast(next.includes(id)?'Project saved to your account.':'Removed from your saved projects.');}catch(error){toast(error.message);}return;
+        saved=next;writeStorage(BOOKMARK_STORAGE,saved);updateSavedCount();renderFeatured();renderProjects();if(!$('#project-modal').classList.contains('hidden'))openDetail(id,$('#modal-close'));toast(next.includes(id)?'Project saved on this device.':'Removed from your saved projects.');return;
       }
-      const startRoadmap=event.target.closest('[data-start-roadmap]');if(startRoadmap){try{await post('/roadmaps',{projectId:startRoadmap.dataset.startRoadmap});closeModal();setView('roadmap');await refreshRoadmap(startRoadmap.dataset.startRoadmap);toast('Project roadmap added to your account.');}catch(error){toast(error.message);}return;}
+      const startRoadmap=event.target.closest('[data-start-roadmap]');if(startRoadmap){const id=startRoadmap.dataset.startRoadmap;if(!roadmaps.some(item=>item.projectId===id)){const roadmap=makeRoadmap(id);if(roadmap)roadmaps.push(roadmap);persistRoadmaps();}closeModal();setView('roadmap');refreshRoadmap(id);toast('Your project roadmap is ready.');return;}
+      const saveReview=event.target.closest('[data-save-review]');if(saveReview){const card=saveReview.closest('[data-submission-card]');const item=submissions.find(entry=>entry.id===saveReview.dataset.saveReview);if(item){item.feedback=$('[data-local-feedback]',card).value.trim();item.status=$('[data-local-status]',card).value;writeStorage(SUBMISSION_STORAGE,submissions);renderSubmissions();toast('Demo feedback saved in this browser.');}return;}
       const detail=event.target.closest('[data-detail]');if(detail){openDetail(detail.dataset.detail,detail);return;}
-      const review=event.target.closest('[data-review-submit]');if(review){
-        const card=review.closest('[data-review-card]');try{await patch(`/mentor/submissions/${encodeURIComponent(review.dataset.reviewSubmit)}`,{status:$('[data-review-status]',card).value,feedback:$('[data-feedback]',card).value,mentorName},{'X-Mentor-Key':mentorKey});$('#mentor-status').textContent='Review saved.';await loadMentorQueue();await refreshRoadmap(activeRoadmapProjectId);toast('Mentor review saved.');}catch(error){$('#mentor-status').textContent=error.message;}return;
-      }
       if(event.target.closest('[data-close-modal]')||event.target.id==='modal-close'||event.target.id==='project-modal')closeModal();
       if(event.target.closest('[data-clear-filters]'))$('#clear-filters').click();
     });
 
-    $('#auth-form').addEventListener('submit',async event=>{
-      event.preventDefault();const form=event.currentTarget;const payload={email:form.elements.email.value.trim(),password:form.elements.password.value};if(authMode==='register')payload.name=form.elements.name.value.trim();
-      $('#auth-status').textContent='';$('#auth-submit').disabled=true;
-      try{await post(`/auth/${authMode}`,payload);form.reset();showAuthGate(false);await hydrateWorkspace();toast(authMode==='register'?'Your account is ready.':'Welcome back.');}
-      catch(error){$('#auth-status').textContent=error.message;}
-      finally{$('#auth-submit').disabled=false;}
-    });
     $('#project-search').addEventListener('input',renderProjects);$('#category-filter').addEventListener('change',renderProjects);$('#difficulty-filter').addEventListener('change',renderProjects);$('#project-sort').addEventListener('change',renderProjects);
     $('#clear-filters').addEventListener('click',()=>{$('#project-search').value='';$('#category-filter').value='all';$('#difficulty-filter').value='all';$('#project-sort').value='recommended';showSaved=false;renderProjects();});
     $('#saved-only').addEventListener('click',()=>{showSaved=!showSaved;renderProjects();});
     $('#resource-search').addEventListener('input',renderResources);$('#resource-category').addEventListener('change',renderResources);
-    $('#roadmap-project-select').addEventListener('change',async event=>{if(!event.target.value)return;try{await post('/roadmaps',{projectId:event.target.value});await refreshRoadmap(event.target.value);}catch(error){toast(error.message);}});
-    $('#milestone-list').addEventListener('change',async event=>{const input=event.target.closest('[data-milestone]');if(!input||!activeRoadmapProjectId)return;try{await patch(`/roadmaps/${encodeURIComponent(activeRoadmapProjectId)}/milestones/${encodeURIComponent(input.dataset.milestone)}`,{completed:input.checked});await refreshRoadmap(activeRoadmapProjectId);}catch(error){toast(error.message);}});
-    $('#submission-form').addEventListener('submit',async event=>{event.preventDefault();if(!activeRoadmapProjectId){$('#submission-status').textContent='Start a project roadmap before submitting.';return;}const form=event.currentTarget;try{const response=await post('/submissions',{projectId:activeRoadmapProjectId,url:form.elements.url.value.trim(),notes:form.elements.notes.value.trim()});submissions.unshift(response.submission);form.reset();renderSubmissions();$('#submission-status').textContent='Submitted for mentor review.';toast('Your work was sent for review.');}catch(error){$('#submission-status').textContent=error.message;}});
-    $('#mentor-access-form').addEventListener('submit',async event=>{event.preventDefault();mentorKey=event.currentTarget.elements.key.value;mentorName=event.currentTarget.elements.mentorName.value.trim()||'Mentor';await loadMentorQueue();});
+    $('#roadmap-project-select').addEventListener('change',event=>{if(!event.target.value)return;const id=event.target.value;if(!roadmaps.some(item=>item.projectId===id)){const roadmap=makeRoadmap(id);if(roadmap)roadmaps.push(roadmap);persistRoadmaps();}refreshRoadmap(id);});
+    $('#milestone-list').addEventListener('change',event=>{const input=event.target.closest('[data-milestone]');if(!input||!activeRoadmapProjectId)return;const roadmap=roadmaps.find(item=>item.projectId===activeRoadmapProjectId);const milestone=roadmap?.milestones.find(item=>item.id===input.dataset.milestone);if(milestone){milestone.completed=input.checked;persistRoadmaps();refreshRoadmap(activeRoadmapProjectId);}});
+    $('#submission-form').addEventListener('submit',event=>{event.preventDefault();if(!activeRoadmapProjectId){$('#submission-status').textContent='Start a project roadmap before submitting.';return;}const form=event.currentTarget;const url=form.elements.url.value.trim();if(!/^https:\/\//i.test(url)){form.elements.url.setCustomValidity('Please use an HTTPS link.');form.elements.url.reportValidity();return;}form.elements.url.setCustomValidity('');submissions.unshift({id:crypto.randomUUID?.()||String(Date.now()),projectId:activeRoadmapProjectId,url,notes:form.elements.notes.value.trim(),createdAt:new Date().toISOString(),status:'pending'});writeStorage(SUBMISSION_STORAGE,submissions);form.reset();renderSubmissions();$('#submission-status').textContent='Saved in this browser. No mentor has been notified.';toast('Submission saved on this device.');});
     $('#profile-form').addEventListener('input',event=>{if(event.target.name){$(`[data-error="${event.target.name}"]`).textContent='';event.target.setAttribute('aria-invalid','false');$('#form-status').textContent='';}});
-    $('#profile-form').addEventListener('submit',async event=>{event.preventDefault();const result=validateProfileForm(event.currentTarget);if(!result.valid){$('#form-status').textContent='Please check the highlighted fields.';event.currentTarget.querySelector('[aria-invalid="true"]')?.focus();return;}try{const response=await put('/profile',result.values);fillProfileForm(response.profile);renderFeatured();$('#form-status').textContent='Profile synced to your account.';toast('Your profile was updated.');}catch(error){$('#form-status').textContent=error.message;}});
-    $('#logout-button').addEventListener('click',async()=>{try{await post('/auth/logout',{});}catch{}profile={...window.SkillBridgeProfile.demo};saved=[];roadmaps=[];submissions=[];showAuthGate(true);setAuthMode('login');$('#auth-status').textContent='You have signed out.';});
+    $('#profile-form').addEventListener('submit',event=>{event.preventDefault();const result=validateProfileForm(event.currentTarget);if(!result.valid){$('#form-status').textContent='Please check the highlighted fields.';event.currentTarget.querySelector('[aria-invalid="true"]')?.focus();return;}profile=result.values;writeStorage(PROFILE_STORAGE,profile);fillProfileForm(profile);renderFeatured();$('#form-status').textContent='Saved on this device.';toast('Your profile was updated.');});
     $('#menu-toggle').addEventListener('click',()=>{const open=$('#sidebar').classList.toggle('open');$('#menu-toggle').setAttribute('aria-expanded',String(open));});
     $('#theme-toggle').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
     $('#modal-close').addEventListener('click',closeModal);
@@ -205,8 +164,6 @@
   renderResources();
   let preferredTheme='light';try{preferredTheme=localStorage.getItem(THEME_STORAGE)||'light';}catch{}setTheme(preferredTheme);
   bindEvents();
-  (async function initialize(){
-    try{const session=await api('/auth/session');if(!session.authenticated){showAuthGate(true);return;}showAuthGate(false);await hydrateWorkspace();}
-    catch(error){showAuthGate(true);$('#auth-status').textContent=`Could not connect to the SkillBridge server. Start it with node server.js. (${error.message})`;}
-  })();
+  fillProfileForm(profile);renderFeatured();renderProjects();updateSavedCount();refreshRoadmap(location.hash.slice(1)==='roadmap'?'':activeRoadmapProjectId);
+  const initialView=location.hash.slice(1);setView(['dashboard','projects','resources','roadmap','profile'].includes(initialView)?initialView:'dashboard');
 })();

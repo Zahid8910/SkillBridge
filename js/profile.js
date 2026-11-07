@@ -1,5 +1,5 @@
 (function () {
-  const demo = { name: 'Demo Student', university: 'Your university', department: 'Computer Science & Engineering', year: '2nd year', skills: 'HTML, CSS, JavaScript', interests: 'Frontend development, UI/UX' };
+  const demo = { name: 'Md. Zahid Hasan', university: 'Your university', department: 'Computer Science & Engineering', year: '2nd year', skills: 'HTML, CSS, JavaScript', interests: 'Frontend development, UI/UX' };
 
   function normalize(profile) {
     return Object.fromEntries(['name', 'university', 'department', 'year', 'skills', 'interests'].map(key => [key, String(profile[key] || '').trim()]));
