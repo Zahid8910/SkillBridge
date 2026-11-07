@@ -14,16 +14,6 @@ SkillBridge is a frontend-only student learning workspace. It combines practical
 
 Project links and demo feedback stay in the current browser. The review panel demonstrates the interaction only: it does not contact a mentor or provide external review. Browser storage is device-specific and can be cleared with browser data.
 
-## Run locally
-
-Open `index.html` in a browser, or serve this folder with any static file server. For example, with Python installed:
-
-```bash
-python -m http.server 8000
-```
-
-Then visit `http://localhost:8000`.
-
 ## Bangladesh career resources
 
 - [UGC ICSETEP internship portal](https://ssiicsetep.ugc.gov.bd/internship)
@@ -48,11 +38,3 @@ SkillBridge/
 
 `js/projects.js` contains project briefs and learning resources. `js/app.js` handles views, forms, local persistence and interactions. `css/style.css` contains the interface and responsive styles.
 
-## Assignment walkthrough
-
-1. Explain the gap between coursework and practical project experience.
-2. Demonstrate project search, filters and a project brief.
-3. Start a roadmap, complete milestones and show progress.
-4. Save a project and update the profile, then refresh to show browser persistence.
-5. Save a project link, leave demo feedback and explain that this frontend demo does not send it to a mentor.
-6. Show Bangladesh-specific internship and career resources.
