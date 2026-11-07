@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="SkillBridge helps students build practical skills through industry-inspired projects and trusted learning resources.">
+  <title>SkillBridge — Build skills that move you forward</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/projects.js" defer></script>
+  <script src="js/profile.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#dashboard" aria-label="SkillBridge dashboard"><span class="brand-mark">s</span><span>skill<span class="brand-strong">bridge</span></span></a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="side-nav">
+        <a href="#dashboard" class="nav-link active" data-view="dashboard"><span class="nav-icon">⌂</span>Dashboard</a>
+        <a href="#projects" class="nav-link" data-view="projects"><span class="nav-icon">▦</span>Explore projects <span class="nav-count" id="project-nav-count">10</span></a>
+        <a href="#resources" class="nav-link" data-view="resources"><span class="nav-icon">▤</span>Learning resources</a>
+        <a href="#profile" class="nav-link" data-view="profile"><span class="nav-icon">◎</span>My profile</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note"><span class="note-spark">✳</span><strong>Small steps add up.</strong><p>Choose one project and make this week count.</p><button class="text-action" data-go="projects">Find a project <span>↗</span></button></div>
+        <div class="side-footer"><span class="online-dot"></span>Built for your next step</div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb"><span>Workspace</span><b>/</b><strong id="page-title">Dashboard</strong></div>
+        <div class="top-actions"><span class="today-label" id="today-label"></span><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span id="theme-icon" aria-hidden="true">☾</span></button><button class="avatar" id="top-avatar" data-go="profile" aria-label="Open profile">S</button></div>
+      </header>
+      <div class="content-wrap">
+        <section class="view active" id="view-dashboard" aria-labelledby="welcome-title">
+          <div class="welcome-row"><div><div class="eyebrow"><span class="eyebrow-line"></span>YOUR CAREER, IN PRACTICE</div><h1 id="welcome-title">Good morning, <span id="welcome-name">Samira</span> <span class="wave">✳</span></h1><p class="lead">Turn what you know into what you can build. Your next step starts here.</p></div><button class="button button-primary" data-go="projects">Explore projects <span>↗</span></button></div>
+          <div class="hero-panel"><div class="hero-copy"><span class="hero-kicker">THEORY TO PRACTICE</span><h2>Build the experience<br>your future role asks for.</h2><p>Explore realistic briefs, understand the skills behind them, and learn by doing.</p><button class="button button-light" data-go="projects">Find your next project <span>→</span></button></div><div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-core"><span class="core-star">✳</span><span>learn<br>by building</span></div><div class="art-tag tag-top">IDEA <b>→</b> IMPACT</div><div class="art-tag tag-bottom"><i></i> Your progress, your pace</div></div></div>
+          <div class="section-heading"><div><h2>Your learning workspace</h2><p>A few useful places to focus your energy.</p></div></div>
+          <div class="overview-grid">
+            <button class="overview-card" data-go="projects"><div class="overview-top"><span class="overview-icon blue-icon">▦</span><span class="card-arrow">↗</span></div><div class="metric" id="project-total">10</div><div class="metric-label">practical projects</div><p>Briefs across frontend, data, design and more.</p><div class="mini-link">Explore the library <span>→</span></div></button>
+            <button class="overview-card" data-go="resources"><div class="overview-top"><span class="overview-icon green-icon">▤</span><span class="card-arrow">↗</span></div><div class="metric" id="resource-total">10</div><div class="metric-label">trusted resources</div><p>Hand-picked guides to grow your toolkit.</p><div class="mini-link">Browse resources <span>→</span></div></button>
+            <button class="overview-card skill-card" data-go="profile"><div class="overview-top"><span class="overview-icon amber-icon">✳</span><span class="card-arrow">↗</span></div><div class="metric skill-metric" id="skill-summary">Add your skills</div><div class="metric-label">your starting point</div><p>Keep your profile current and shape a path that fits.</p><div class="mini-link">Update your profile <span>→</span></div></button>
+          </div>
+          <div class="section-heading featured-heading"><div><h2>Recommended for your next step</h2><p>Matched to the skills and career interests in your profile.</p></div><button class="quiet-link" data-go="projects">View all projects <span>→</span></button></div>
+          <div class="project-grid featured-grid" id="featured-projects"></div>
+          <div class="bottom-nudge"><div class="nudge-icon">↗</div><div><strong>Not sure where to begin?</strong><p>Start with a beginner project and build one feature at a time.</p></div><button class="text-action" data-go="projects">See beginner projects <span>→</span></button></div>
+        </section>
+
+        <section class="view" id="view-projects" aria-labelledby="projects-title">
+          <div class="page-intro"><div><div class="eyebrow"><span class="eyebrow-line"></span>LEARN BY BUILDING</div><h1 id="projects-title">Explore projects</h1><p class="lead">Real-world inspired briefs to turn your skills into experience.</p></div><div class="saved-pill"><span>♡</span><strong id="saved-count">0</strong> saved</div></div>
+          <div class="filter-panel"><label class="search-box"><span>⌕</span><input id="project-search" type="search" placeholder="Search projects or skills..." aria-label="Search projects"></label><label class="select-wrap"><span class="sr-only">Category</span><select id="category-filter"><option value="all">All categories</option></select></label><label class="select-wrap"><span class="sr-only">Difficulty</span><select id="difficulty-filter"><option value="all">All levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label><label class="select-wrap sort-select"><span class="sr-only">Sort projects</span><select id="project-sort" aria-label="Sort projects"><option value="recommended">Recommended</option><option value="title">Title A–Z</option><option value="difficulty">Difficulty</option><option value="duration">Shortest first</option></select></label><button class="filter-reset" id="clear-filters">Clear</button></div>
+          <div class="results-line"><span id="project-results-label">Showing all projects</span><button id="saved-only" class="saved-toggle" aria-pressed="false">♡ <span>Saved only</span></button></div>
+          <div class="project-grid" id="all-projects"></div><div class="empty-state hidden" id="projects-empty"><span>⌕</span><h3>No projects found</h3><p>Try another search or clear your filters.</p><button class="button button-outline" data-clear-filters>Clear filters</button></div>
+        </section>
+
+        <section class="view" id="view-resources" aria-labelledby="resources-title">
+          <div class="page-intro"><div><div class="eyebrow"><span class="eyebrow-line"></span>KEEP GROWING</div><h1 id="resources-title">Learning resources</h1><p class="lead">A focused collection of trusted guides for your toolkit.</p></div></div>
+          <div class="filter-panel resource-filters"><label class="search-box"><span>⌕</span><input id="resource-search" type="search" placeholder="Search skills or resources..." aria-label="Search learning resources"></label><label class="select-wrap"><span class="sr-only">Resource category</span><select id="resource-category"><option value="all">All skills</option></select></label></div>
+          <div class="results-line"><span id="resource-results-label"></span><span class="external-note">External resources open in a new tab ↗</span></div><div class="resource-grid" id="resource-list"></div><div class="empty-state hidden" id="resources-empty"><span>⌕</span><h3>No resources found</h3><p>Try a different keyword or skill category.</p></div>
+        </section>
+
+        <section class="view" id="view-profile" aria-labelledby="profile-title">
+          <div class="page-intro"><div><div class="eyebrow"><span class="eyebrow-line"></span>YOUR JOURNEY</div><h1 id="profile-title">My profile</h1><p class="lead">A little context helps you make your learning path your own.</p></div></div>
+          <div class="profile-layout"><aside class="profile-summary"><div class="profile-avatar" id="profile-avatar">S</div><h2 id="profile-display-name">Samira Rahman</h2><p id="profile-display-role">CSE student · 2nd year</p><div class="profile-divider"></div><span class="summary-label">CAREER INTERESTS</span><div class="interest-tags" id="interest-tags"></div><div class="profile-private">⌑ <span>Your profile is saved on this device.</span></div></aside>
+            <form class="profile-form" id="profile-form" novalidate><div class="form-heading"><div><h2>Your details</h2><p>Update your information and interests.</p></div><span class="local-badge"><i></i> Saved locally</span></div><div class="form-grid"><label class="field full-field">Full name<input name="name" type="text" required minlength="2" maxlength="60" autocomplete="name" placeholder="Your full name"><span class="field-error" data-error="name"></span></label><label class="field">University<input name="university" type="text" required maxlength="100" placeholder="e.g. BRAC University"><span class="field-error" data-error="university"></span></label><label class="field">Department<input name="department" type="text" required maxlength="80" placeholder="e.g. Computer Science & Engineering"><span class="field-error" data-error="department"></span></label><label class="field">Academic year / semester<select name="year" required><option value="">Choose your year</option><option>1st year</option><option>2nd year</option><option>3rd year</option><option>4th year</option><option>Final year</option><option>Graduate</option></select><span class="field-error" data-error="year"></span></label><label class="field">Career interests<input name="interests" type="text" maxlength="120" placeholder="e.g. Frontend, UX design"><small>Separate interests with commas.</small><span class="field-error" data-error="interests"></span></label><label class="field full-field">Technical skills<input name="skills" type="text" maxlength="180" placeholder="e.g. JavaScript, SQL, Figma"><small>Separate skills with commas.</small><span class="field-error" data-error="skills"></span></label></div><div class="form-footer"><span class="form-status" id="form-status" role="status"></span><button class="button button-primary" type="submit">Save profile <span>→</span></button></div></form>
+          </div>
+          <div class="profile-tip"><span>✳</span><div><strong>Make this yours</strong><p>Your details stay in this browser using local storage. You can update them whenever your goals change.</p></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#dashboard" class="mobile-link active" data-view="dashboard"><span>⌂</span>Home</a><a href="#projects" class="mobile-link" data-view="projects"><span>▦</span>Projects</a><a href="#resources" class="mobile-link" data-view="resources"><span>▤</span>Learn</a><a href="#profile" class="mobile-link" data-view="profile"><span>◎</span>Profile</a></nav>
+  <div class="modal-backdrop hidden" id="project-modal" role="presentation"><section class="project-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="Close project details">×</button><div id="modal-content"></div></section></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
