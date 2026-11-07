@@ -1,5 +1,5 @@
 // Project and resource content lives in one place so filters and cards share the same data.
-window.SkillBridgeData = {
+const skillBridgeData = {
   projects: [
     {id:'campus-events',title:'Campus Events Hub',category:'Frontend Development',level:'Beginner',duration:'1–2 weeks',summary:'Create a responsive events page where students can discover what is happening on campus.',tech:['HTML','CSS','JavaScript'],skills:['Responsive layouts','DOM events','Accessible forms'],requirements:['Show each event’s title, date, location and category.','Let students filter the listing by event category.','Keep navigation and event cards usable on a phone.'],outcomes:['Build reusable event cards','Filter events by category','Create a clear mobile experience'],featured:true},
     {id:'expense-tracker',title:'Personal Expense Tracker',category:'Full-Stack Development',level:'Intermediate',duration:'2–3 weeks',summary:'Design a simple tool to record spending, group transactions and understand monthly habits.',tech:['JavaScript','LocalStorage','CSS'],skills:['CRUD patterns','Data modeling','Form validation'],requirements:['Add, edit and remove a transaction with amount, date and category.','Show totals grouped by category and month.','Keep saved transactions after a refresh and validate amounts.'],outcomes:['Persist data in the browser','Summarize spending by category','Handle empty and invalid input'],featured:true},
@@ -22,6 +22,14 @@ window.SkillBridgeData = {
     {title:'HTTP and REST',skill:'REST APIs',type:'Documentation',level:'Intermediate',description:'Understand HTTP requests, responses, methods and status codes with MDN.',url:'https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview'},
     {title:'SQL Tutorial',skill:'SQL & Databases',type:'Interactive course',level:'Beginner',description:'Practice SQL queries, joins and data changes using a simple interactive format.',url:'https://www.w3schools.com/sql/'},
     {title:'React: Quick Start',skill:'React fundamentals',type:'Documentation',level:'Beginner',description:'An official introduction to components, props, events and state in React.',url:'https://react.dev/learn'},
-    {title:'Problem Solving',skill:'Problem-solving',type:'Practice',level:'Beginner',description:'Build confidence with programming fundamentals through bite-sized challenges.',url:'https://www.hackerrank.com/domains/algorithms'}
+    {title:'Problem Solving',skill:'Problem-solving',type:'Practice',level:'Beginner',description:'Build confidence with programming fundamentals through bite-sized challenges.',url:'https://www.hackerrank.com/domains/algorithms'},
+    {title:'Bangladesh Internship Listings',skill:'Bangladesh careers',type:'Job board',level:'All levels',description:'Browse internship listings in Bangladesh and verify each employer’s current requirements and deadline.',url:'https://bdjobs.com/h/jobs?JobType=intern&lang=en'},
+    {title:'ICSETEP Internship Portal',skill:'Bangladesh careers',type:'UGC program',level:'Undergraduate',description:'Check the UGC-managed portal for CSE/IT internship calls, eligibility criteria and application guidance.',url:'https://ssiicsetep.ugc.gov.bd/internship'},
+    {title:'BASIS Students’ Forum',skill:'Bangladesh tech community',type:'Student community',level:'Student',description:'Explore student community activities, skills events and the forum’s internship information.',url:'https://join-bsf.basis.org.bd/'},
+    {title:'Pathao Careers',skill:'Bangladesh tech careers',type:'Company careers',level:'All levels',description:'Review current roles and check the job type and location on each company listing.',url:'https://careers.pathao.com/job-openings/'},
+    {title:'BRAC Bank Internship Program',skill:'Bangladesh careers',type:'Internship program',level:'Undergraduate',description:'Review the program details and university application requirements before applying.',url:'https://bracbank.com/bn/page/internship-program'}
   ]
 };
+
+if (typeof window !== 'undefined') window.SkillBridgeData = skillBridgeData;
+if (typeof module !== 'undefined' && module.exports) module.exports = skillBridgeData;

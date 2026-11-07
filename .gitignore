@@ -1,0 +1,5 @@
+data/skillbridge.json
+data/skillbridge.json.tmp
+.env
+node_modules/
+npm-debug.log*
